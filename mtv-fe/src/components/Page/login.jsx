@@ -23,7 +23,6 @@ const Login = () => {
 
         {/* Right Section - Login Form */}
         <LoginForm />
-
         </div>
         </div>
       

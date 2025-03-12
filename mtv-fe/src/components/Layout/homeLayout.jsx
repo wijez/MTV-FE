@@ -4,6 +4,7 @@ import InfoUser from './infoUser'
 import Propose from './propose'
 import ScientificResearch from './scientificResearch'
 import Statistical from './statistical'
+
 function HomeLayout() {
   return (
     <>
@@ -13,10 +14,10 @@ function HomeLayout() {
         <div className="flex-1  md:px-10 md:py-3">
           <InfoUser />
         </div>
-        <div className="flex-1 md:px-10 md:pb-3  flex items-center justify-center">
+        <div className="flex-1 md:px-10 md:pb-3 flex items-center justify-center">
           <Propose />
         </div>
-        <div className="flex-1 md:px-10 md:py-3 flex items-center justify-center">
+        <div className="flex-1 md:px-10 md:py-3">
           <Statistical />
         </div>
       </div>
