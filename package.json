@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "cloudinary": "^2.6.0",
+    "cloudinary-core": "^2.13.1",
+    "cloudinary-react": "^1.8.1",
+    "react-paginate": "^8.3.0"
+  }
+}

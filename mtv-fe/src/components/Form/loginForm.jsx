@@ -14,23 +14,49 @@ const loginForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(''); // Clear previous errors
-    
+
+        const mockUser = {
+          email: "admin@test.com",
+          password: "password123",
+          role: "TEACHER", // Hoặc "TEACHER"
+          token: "mock-token-123456",
+        };
+
         try {
           // tạo API để yêu cầu đăng nhập
-          const response = await axios.post('http://localhost:8000/user/auth/login/', {
-              email: email,
-              password: password,
-          });
+          // const response = await axios.post('http://localhost:8000/auth/login/', {
+          //     email: email,
+          //     password: password,
+          // });
     
-          const data = await response.data;
+          // const data = await response.data;
     
-          if (response.status === 200) {
-            // Successful login
-            console.log('Login successful:', data);
-            // lưu token vào localStorage
-            localStorage.setItem('token', data.token); 
-            // chuyển hướng đến trang chủ
-            navigate('/Home');
+          // if (response.status === 200) {
+          //   // Successful login
+          //   console.log('Login successful:', data);
+          //   // lưu token vào localStorage
+          //   localStorage.setItem('token', data.token); 
+          //   localStorage.setItem('role', data.role);
+          //   // chuyển hướng đến trang chủ
+          //    // Điều hướng dựa trên vai trò
+          //   if (data.role === 'ADMIN') {
+          //     navigate('/admin');
+          //   } else if (data.role === 'TEACHER') {
+          //     navigate('/home');
+          //   } 
+          if (email === mockUser.email && password === mockUser.password) {
+            console.log('Login successful:', mockUser);
+      
+            // Lưu token và vai trò vào localStorage
+            localStorage.setItem('token', mockUser.token);
+            localStorage.setItem('role', mockUser.role);
+      
+            // Điều hướng dựa trên vai trò
+            if (mockUser.role === 'ADMIN') {
+              navigate('/home-admin');
+            } else if (mockUser.role === 'TEACHER') {
+              navigate('/home');
+            }
           } else {
             setError(data.message || 'Invalid email or password');
           }

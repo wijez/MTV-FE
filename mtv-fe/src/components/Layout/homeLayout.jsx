@@ -8,7 +8,7 @@ import Statistical from './statistical'
 function HomeLayout() {
   return (
     <>
-     <div className="min-h-screen flex flex-col md:flex-row  bg-blue-700">
+     <div className="pt-30 min-h-screen flex flex-col md:flex-row  bg-blue-700">
       {/* Left Column */}
       <div className="flex flex-col w-full md:w-1/2">
         <div className="flex-1  md:px-10 md:py-3">
