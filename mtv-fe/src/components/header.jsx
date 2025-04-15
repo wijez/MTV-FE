@@ -16,7 +16,7 @@ const HeaderPage = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 flex justify-between items-center p-4 ${
+      className={`flex justify-between items-center p-4 ${
         darkMode ? 'bg-gray-800' : 'bg-blue-700'
       } z-50`}
     >

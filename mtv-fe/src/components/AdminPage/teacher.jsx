@@ -1,9 +1,9 @@
-import React from 'react';
-import ScientificAdminLayout from '../Layout/scientificAdminLayout';
-import HeaderAdmin from '../headeradmin';
-import Menu from '../menu';
+import React from 'react'
+import Menu from '../menu'
+import HeaderAdmin from '../headeradmin'
+import TeacherLayout from '../Layout/teacherLayout'
 
-export default function ScientificRequest() {
+export default function Teacher() {
   return (
     <>
     <div className="flex h-screen">
@@ -19,10 +19,10 @@ export default function ScientificRequest() {
 
       {/* Nội dung chính */}
       <div className="flex-1">
-      <ScientificAdminLayout />
-      </div>
+        <TeacherLayout />
       </div>
     </div>
-  </>
-  );
+  </div>
+    </>
+  )
 }

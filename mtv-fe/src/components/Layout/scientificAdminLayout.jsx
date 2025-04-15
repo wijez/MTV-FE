@@ -1,25 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import Menu from '../menu';
 import Pagination from '@mui/material/Pagination';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { fetchScientificResearch } from '../../api/api';
+import UndefineImage from '../../assets/undefine.png';
 
 export default function ScientificAdminLayout() {
-  const [researchRequests, setResearchRequests] = useState([]); // Danh sách yêu cầu nghiên cứu
-  const [currentPage, setCurrentPage] = useState(1); // Trang hiện tại
-  const itemsPerPage = 5; // Số lượng yêu cầu trên mỗi trang
+  const [researchRequests, setResearchRequests] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); // Hook để điều hướng
+  const navigate = useNavigate();
 
   // Gọi API để lấy danh sách yêu cầu nghiên cứu
   useEffect(() => {
     const fetchResearchRequests = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/scientific_research/');
+        const response = await fetchScientificResearch();
         setResearchRequests(response.data);
-        setLoading(false);
       } catch (error) {
         console.error('Lỗi khi gọi API:', error);
+      } finally {
         setLoading(false);
       }
     };
@@ -40,45 +40,61 @@ export default function ScientificAdminLayout() {
 
   // Hàm xử lý khi nhấn nút "Xem"
   const handleViewDetails = (id) => {
-    navigate(`/scientific-details/${id}`); // Điều hướng đến trang chi tiết
+    navigate(`/scientific-details/${id}`);
   };
 
   return (
     <div className="flex h-screen">
-      <Menu />
-
       <div className="pt-20 flex-1 bg-gray-100 p-6">
         <div className="bg-white p-6 rounded shadow">
-          <h1 className="text-2xl font-bold text-gray-700 mb-4 text-center">Xem Yêu Cầu NCKH</h1>
+          <h1 className="text-2xl font-bold text-gray-700 mb-4 text-center">Xem Yêu Cầu Nghiên cứu</h1>
 
           {loading ? (
             <div className="text-center text-blue-500">Đang tải dữ liệu...</div>
           ) : (
             <div>
-              {paginatedRequests.map((request, index) => (
+              {paginatedRequests.map((request) => (
                 <div
                   key={request.id}
-                  className="flex justify-between items-center bg-gray-200 p-4 rounded mb-4"
+                  className="flex items-center bg-gray-200 p-4 rounded mb-4"
                 >
-                  <div>
-                    <p className="font-bold">{request.name}</p>
-                    <p className="text-sm text-gray-600">GV: {request.status}</p>
+                  {/* Banner bên trái */}
+                  <div className="flex-shrink-0">
+                    <img
+                      src={request.banner || UndefineImage}
+                      alt="Banner"
+                      className="w-32 h-20 rounded"
+                    />
                   </div>
-                  <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                    onClick={() => handleViewDetails(request.id)} // Gọi hàm điều hướng
-                  >
-                    Xem
-                  </button>
+
+                  {/* Thông tin bên phải */}
+                  <div className="flex-1 ml-4">
+                    <p className="font-bold">Tên: {request.name || 'Không có tên'}</p>
+                    <p className="text-sm text-gray-600">Trạng thái: {request.status || 'Không có trạng thái'}</p>
+                    <p className="text-sm text-gray-600">Cấp độ: {request.level || 'Không có cấp độ'}</p>
+                    <p className="text-sm text-gray-600">
+                      Ngày tạo: {new Date(request.created_at).toLocaleDateString('vi-VN')}
+                    </p>
+                  </div>
+
+                  {/* Nút Xem */}
+                  <div>
+                    <button
+                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                      onClick={() => handleViewDetails(request.id)}
+                    >
+                      Xem
+                    </button>
+                  </div>
                 </div>
               ))}
 
               {/* Phân trang */}
               <div className="flex justify-center mt-4">
                 <Pagination
-                  count={Math.ceil(researchRequests.length / itemsPerPage)} // Tổng số trang
-                  page={currentPage} // Trang hiện tại
-                  onChange={handlePageChange} // Hàm xử lý khi thay đổi trang
+                  count={Math.ceil(researchRequests.length / itemsPerPage)}
+                  page={currentPage}
+                  onChange={handlePageChange}
                   color="primary"
                   variant="outlined"
                   shape="rounded"

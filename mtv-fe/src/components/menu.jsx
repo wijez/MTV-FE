@@ -1,70 +1,59 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserRoundPlus, BellPlus, Eye, Telescope, ChartLine, FileChartColumn } from 'lucide-react';
 
 const Menu = () => {
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <>
-      {/* Nút Toggle Menu */}
+    <div className='flex flex-col items-center justify-center text-2xl text-blue-700 font-bold h-16'>
+      <h1>MTV</h1>
+    </div>
+    <div className="pt-1 bg-white text-gray-800 h-screen p-4 flex flex-col space-y-4 transform text-sm transition-transform md:relative md:translate-x-0 overflow-y-auto">
       <button
-        className=" bg-blue-700 top-2 left-3 flex justify-between items-center p-4 text-white fixed z-50 rounded-md md:hidden"
-        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center space-x-2 hover:bg-blue-600 hover:text-white p-3 rounded transition cursor-pointer"
+        onClick={() => navigate('/teacher')}
       >
-        {isOpen ? '✖' : '☰'}
+        <UserRoundPlus />
+        <span>Tạo giảng viên</span>
       </button>
-
-      {/* Menu */}
-      <div
-        className={`pt-10 bg-blue-500 text-white w-64 h-screen p-4 flex flex-col space-y-4 fixed top-0 left-0 z-40 transform ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        } transition-transform md:relative md:translate-x-0`}
+      <button
+        className="flex items-center space-x-2 hover:bg-blue-600 hover:text-white p-3 rounded transition cursor-pointer"
+        onClick={() => navigate('/notifications')}
       >
-        <button
-          className="flex items-center space-x-2 hover:bg-blue-600 p-2 rounded transition"
-          onClick={() => navigate('/create-teacher')}
-        >
-          <UserRoundPlus />
-          <span>Tạo giảng viên</span>
-        </button>
-        <button
-          className="flex items-center space-x-2 hover:bg-blue-600 p-2 rounded transition"
-          onClick={() => navigate('/notifications')}
-        >
-          <BellPlus />
-          <span>Thông báo</span>
-        </button>
-        <button
-          className="flex items-center space-x-2 hover:bg-blue-600 p-2 rounded transition"
-          onClick={() => navigate('/funding')}
-        >
-          <Eye />
-          <span>Xem đề xuất kinh phí</span>
-        </button>
-        <button
-          className="flex items-center space-x-2 hover:bg-blue-600 p-2 rounded transition"
-          onClick={() => navigate('/scientific-requests')}
-        >
-          <Telescope />
-          <span>Xem yêu cầu NCKH</span>
-        </button>
-        <button
-          className="flex items-center space-x-2 hover:bg-blue-600 p-2 rounded transition"
-          onClick={() => navigate('/statistics')}
-        >
-          <ChartLine />
-          <span>Thống kê chi tiết</span>
-        </button>
-        <button
-          className="flex items-center space-x-2 hover:bg-blue-600 p-2 rounded transition"
-          onClick={() => navigate('/scientific-contracts')}
-        >
-          <FileChartColumn />
-          <span>HĐ-NCKH</span>
-        </button>
-      </div>
+        <BellPlus />
+        <span>Thông báo</span>
+      </button>
+      <button
+        className="flex items-center space-x-2 hover:bg-blue-600 hover:text-white p-3 rounded transition cursor-pointer"
+        onClick={() => navigate('/funding-requests')}
+      >
+        <Eye />
+        <span>Xem đề xuất kinh phí</span>
+      </button>
+      <button
+        className="flex items-center space-x-2 hover:bg-blue-600 hover:text-white p-3 rounded transition cursor-pointer"
+        onClick={() => navigate('/scientific-requests')}
+      >
+        <Telescope />
+        <span>Xem yêu cầu Nghiên cứu</span>
+      </button>
+      <button
+        className="flex items-center space-x-2 hover:bg-blue-600 hover:text-white p-3 rounded transition cursor-pointer"
+        onClick={() => navigate('/scientific-requests')}
+      >
+        <ChartLine />
+        <span>Thống kê chi tiết</span>
+      </button>
+      <button
+        className="flex items-center space-x-2 hover:bg-blue-600 hover:text-white p-3 rounded transition cursor-pointer"
+        onClick={() => navigate('/scientific-contracts')}
+      >
+        <FileChartColumn />
+        <span>Hướng dẫn Nghiên cứu</span>
+      </button>
+    </div>
     </>
   );
 };

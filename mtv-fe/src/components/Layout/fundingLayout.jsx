@@ -50,7 +50,7 @@ export default function FundingLayout() {
     };
 
     const fetchNckhOptions = () => {
-        axios.get('/api/nckh_options')
+        axios.get('http://127.0.0.1:8000/scientific_research') // Thay đổi endpoint
             .then(response => {
                 if (Array.isArray(response.data)) {
                     setNckhOptions(response.data);
@@ -64,7 +64,7 @@ export default function FundingLayout() {
     };
 
     const fetchHdNckhOptions = () => {
-        axios.get('/api/hd_nckh_options')
+        axios.get('http://127.0.0.1:8000/scientific_research_activities') // Thay đổi endpoint
             .then(response => {
                 if (Array.isArray(response.data)) {
                     setHdNckhOptions(response.data);

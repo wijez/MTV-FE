@@ -1,24 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import HeaderPage from '../header';
-import Menu from '../menu';
+import { fetchScientificResearchDetails, updateScientificResearchStatus } from '../../api/api';
+import { toast, ToastContainer } from 'react-toastify';
+import AccessFunding from '../Form/AccessFunding';
+
 
 export default function ScientificAdminDetails() {
-  const { id } = useParams();
+  const { id } = useParams(); 
   const navigate = useNavigate();
-  const [research, setResearch] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [research, setResearch] = useState(null); 
+  const [loading, setLoading] = useState(true); 
+  const [error, setError] = useState(null); 
 
+  // Gọi API để lấy chi tiết nghiên cứu
   useEffect(() => {
     const fetchResearchDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/scientific_research/${id}`);
-        setResearch(response.data);
+        const data = await fetchScientificResearchDetails(id); // Gọi API
+        setResearch(data); // Lưu dữ liệu vào state
+        localStorage.setItem(`research_${id}`, JSON.stringify(data)); // Lưu vào localStorage
         setLoading(false);
       } catch (error) {
-        setError('Không thể tải chi tiết nghiên cứu.');
+        const cachedData = localStorage.getItem(`research_${id}`);
+        if (cachedData) {
+          setResearch(JSON.parse(cachedData)); // Lấy dữ liệu từ localStorage nếu có
+        } else {
+          setError('Không thể tải dữ liệu và không có dữ liệu đã lưu.');
+          toast.error('Không thể tải dữ liệu và không có dữ liệu đã lưu.');
+        }
         setLoading(false);
       }
     };
@@ -26,32 +35,29 @@ export default function ScientificAdminDetails() {
     fetchResearchDetails();
   }, [id]);
 
+  // Hàm xử lý thay đổi trạng thái
   const handleStatusChange = async (newStatus) => {
     try {
-      await axios.put(`http://localhost:8000/scientific_research/${id}`, {
-        name: research.name,
-        number_member: research.number_member,
-        description: research.description,
-        status: newStatus,
-        level: research.level,
-        quantity: research.quantity,
-        time_volume: research.time_volume,
-        banner: research.banner,
-        sr_activities: research.sr_activities.id,
-      });
+      const payload = {
+        ...research, // Gửi toàn bộ dữ liệu hiện tại
+        status: newStatus, // Cập nhật trạng thái mới
+        sr_activities: research.sr_activities.id, // Chỉ gửi ID của `sr_activities`
+      };
 
-      setResearch((prev) => ({ ...prev, status: newStatus }));
-      alert(`Trạng thái đã được cập nhật thành ${newStatus}`);
-      navigate('/scientific-requests');
+      await updateScientificResearchStatus(id, payload); // Gọi API cập nhật trạng thái
+      const updatedResearch = { ...research, status: newStatus };
+      localStorage.setItem(`research_${id}`, JSON.stringify(updatedResearch)); // Cập nhật localStorage
+      setResearch(updatedResearch); // Cập nhật state
+      toast.success(`Trạng thái đã được cập nhật thành ${newStatus}`);
+      navigate('/scientific-requests'); // Điều hướng về danh sách yêu cầu
     } catch (error) {
       console.error('Lỗi khi cập nhật trạng thái:', error);
-
       if (error.response) {
-        alert(`Lỗi máy chủ: ${error.response.data.message || error.response.statusText}`);
+        toast.error(`Lỗi máy chủ: ${error.response.data.message || error.response.statusText}`);
       } else if (error.request) {
-        alert('Không thể kết nối đến máy chủ.');
+        toast.error('Không thể kết nối đến máy chủ.');
       } else {
-        alert(`Lỗi: ${error.message}`);
+        toast.error(`Lỗi: ${error.message}`);
       }
     }
   };
@@ -74,100 +80,60 @@ export default function ScientificAdminDetails() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <HeaderPage />
+    <>
+          <div className="flex-1 bg-gray-100 p-6">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h1 className="text-3xl font-bold text-gray-800 mb-6">{research.name}</h1>
 
-      {/* Bố cục chính */}
-      <div className="flex flex-1 pt-16">
-        {/* Menu */}
-          <Menu />
-    
-
-        {/* Nội dung chính */}
-        <div className="flex-1 bg-gray-100 p-4 sm:p-6 overflow-auto">
-          <div className="bg-white p-4 sm:p-6 rounded shadow">
-            <h1 className="text-xl sm:text-2xl font-bold mb-4">{research.name}</h1>
-            <p className="text-sm sm:text-base"><strong>Trạng thái:</strong> {research.status}</p>
-            <p className="text-sm sm:text-base"><strong>Mô tả:</strong> {research.description}</p>
-            <p className="text-sm sm:text-base"><strong>Thời gian tạo:</strong> {new Date(research.created_at).toLocaleDateString('vi-VN')}</p>
-            <p className="text-sm sm:text-base"><strong>Số lượng thành viên:</strong> {research.number_member}</p>
-
-            {/* Nút Duyệt và Không Duyệt */}
-            <div className="mt-6 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-              <button
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
-                onClick={() => handleStatusChange('COMPLETE')}
-              >
-                Duyệt
-              </button>
-              <button
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
-                onClick={() => handleStatusChange('NOT_COMPLETED')}
-              >
-                Không Duyệt
-              </button>
-            </div>
-
-            {/* Tệp đính kèm */}
-            <div className="mt-6">
-              <h2 className="text-lg sm:text-xl font-semibold mb-4">Tệp đính kèm</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {Array.isArray(research.banner) && research.banner.map((url, index) => (
-                  <div key={index} className="border border-gray-300 rounded p-2">
-                    {url.match(/\.(jpeg|jpg|gif|png)$/) ? (
-                      <img
-                        src={url}
-                        alt={`Banner ${index + 1}`}
-                        className="w-full h-auto max-h-64 object-contain"
-                      />
-                    ) : url.match(/\.(mp4|webm|ogg|mkv)$/) ? (
-                      <video
-                        src={url}
-                        controls
-                        className="w-full h-auto max-h-64 object-contain"
-                      />
-                    ) : url.match(/\.(pdf)$/) ? (
-                      <iframe
-                        src={url}
-                        title={`PDF file ${index + 1}`}
-                        className="w-full h-64 border border-gray-300 rounded"
-                      ></iframe>
-                    ) : url.match(/\.(doc|docx|xls|xlsx|txt)$/) ? (
-                      <iframe
-                        src={`https://docs.google.com/gview?url=${url}&embedded=true`}
-                        title={`File ${index + 1}`}
-                        className="w-full h-64 border border-gray-300 rounded"
-                      ></iframe>
-                    ) : (
-                      <div className="flex flex-col items-center">
-                        <p className="text-gray-700 text-sm mb-2">Không thể xem trước tệp này:</p>
-                        <a
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-500 underline"
-                        >
-                          Xem tệp {index + 1}
-                        </a>
-                      </div>
-                    )}
-                    <div className="mt-2 text-center">
-                      <a
-                        href={url}
-                        download
-                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
-                      >
-                        Tải xuống
-                      </a>
-                    </div>
-                  </div>
-                ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <p className="text-lg text-gray-700">
+                  <strong>Trạng thái:</strong> {research.status}
+                </p>
+                <p className="text-lg text-gray-700">
+                  <strong>Mô tả:</strong> {research.description}
+                </p>
+                <p className="text-lg text-gray-700">
+                  <strong>Thời gian tạo:</strong>{' '}
+                  {new Date(research.created_at).toLocaleDateString('vi-VN')}
+                </p>
+              </div>
+              <div>
+                <p className="text-lg text-gray-700">
+                  <strong>Số lượng thành viên:</strong> {research.number_member}
+                </p>
+                <p className="text-lg text-gray-700">
+                  <strong>Cấp độ:</strong> {research.level}
+                </p>
+                <p className="text-lg text-gray-700">
+                  <strong>Số lượng:</strong> {research.quantity}
+                </p>
+                <p className="text-lg text-gray-700">
+                  <strong>Thời gian:</strong> {research.time_volume}
+                </p>
               </div>
             </div>
+            
+            {/* Nút Duyệt và Không Duyệt */}
+            <div className="mt-8 flex justify-end space-x-4">
+            <button
+              className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition w-32" // Đặt chiều rộng cố định
+              onClick={() => handleStatusChange('COMPLETE')}
+            >
+              Duyệt
+            </button>
+            <button
+              className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition w-32" // Đặt chiều rộng cố định
+              onClick={() => handleStatusChange('NOT_COMPLETED')}
+            >
+              Không Duyệt
+            </button>
           </div>
-        </div>
-      </div>
+          </div>
+    
+      <ToastContainer />
     </div>
+          </>
+  
   );
 }

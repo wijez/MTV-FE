@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 
 
 export function ProtectedRoute({ children, role }) {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('access');
   const userRole = localStorage.getItem('role');
 
   if (!token) {

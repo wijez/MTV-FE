@@ -1,11 +1,10 @@
-import React from 'react';
-import ScientificAdminLayout from '../Layout/scientificAdminLayout';
-import HeaderAdmin from '../headeradmin';
-import Menu from '../menu';
+import React from 'react'
+import Menu from '../menu'
+import HeaderAdmin from '../headeradmin'
+import ScientificAdminDetails from '../Details/scientificAdminDetails'
 
-export default function ScientificRequest() {
+export default function ScientificAdmin() {
   return (
-    <>
     <div className="flex h-screen">
     {/* Menu (2/10 chiều rộng) */}
     <div className="w-1/5 bg-white overflow-hidden">
@@ -19,10 +18,9 @@ export default function ScientificRequest() {
 
       {/* Nội dung chính */}
       <div className="flex-1">
-      <ScientificAdminLayout />
-      </div>
+        <ScientificAdminDetails/>
       </div>
     </div>
-  </>
-  );
+  </div>
+  )
 }
