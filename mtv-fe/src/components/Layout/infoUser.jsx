@@ -1,5 +1,6 @@
 import React from 'react'
 import avatar from '../../assets/avatagit.jpg';
+import { useNavigate } from 'react-router-dom';
 
 const sampleUser = {
     id: 1,
@@ -11,6 +12,11 @@ const sampleUser = {
   };
 
 export default function InfoUser() {
+
+    const navigate = useNavigate();
+    const handleClick = () => {
+        navigate('/details');
+    }
   return (
     <>
     <div className="flex flex-col md:flex-row items-center p-4 bg-white shadow-lg rounded-lg w-full h-full mx-auto md:p-10">
@@ -21,7 +27,7 @@ export default function InfoUser() {
             <p className="text-gray-600">{sampleUser.department}</p>
             <p className="text-gray-600">{sampleUser.country}</p>
             <p className="text-gray-600">{sampleUser.address}</p>
-        <button className="mt-2 text-blue-500 hover:underline">Chi tiết</button>
+        <button className="mt-2 text-blue-500 hover:underline" onClick={handleClick}>Chi tiết</button>
       </div>
     </div>
     </>
