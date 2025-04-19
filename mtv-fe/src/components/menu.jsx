@@ -48,7 +48,7 @@ const Menu = () => {
       </button>
       <button
         className="flex items-center space-x-2 hover:bg-blue-600 hover:text-white p-3 rounded transition cursor-pointer"
-        onClick={() => navigate('/scientific-contracts')}
+        onClick={() => navigate('/scientific-contracts-list')}
       >
         <FileChartColumn />
         <span>Hướng dẫn Nghiên cứu</span>

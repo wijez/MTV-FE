@@ -17,7 +17,8 @@ import Dashboard from './components/AdminPage/dashboard';
 import FundingRequest from './components/AdminPage/fundingrequest';
 import Teacher from './components/AdminPage/teacher';
 import ScientificAdmin from './components/AdminPage/scientificdetails';
-
+import ActivitiesScientific from './components/AdminPage/ActivitiesScientific';
+import ActivitiesSRList from './components/AdminPage/ActivititesSRList';
 
 import './App.css';
 
@@ -40,6 +41,8 @@ function App() {
         <Route path="/funding-requests" element={<ProtectedRoute role="ADMIN"><FundingRequest /></ProtectedRoute>} />
         <Route path="/dashboard" element={<Dashboard/>} />
         <Route path="/teacher" element={<ProtectedRoute role="ADMIN"><Teacher /></ProtectedRoute>} />
+        <Route path="/scientific-contracts" element={<ProtectedRoute role="ADMIN"><ActivitiesScientific/></ProtectedRoute>} />
+        <Route path="/scientific-contracts-list" element={<ProtectedRoute role="ADMIN"><ActivitiesSRList/></ProtectedRoute>} />
       </Routes>
      
     </>

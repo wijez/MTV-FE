@@ -57,6 +57,11 @@ export const fetchScientificResearch = async () => {
   const response = await api.get('/scientific_research/');
   return response;
 };
+// tạo nghiên cứu khoa học 
+export const createScientificResearch = async (data) => {
+  const response = await api.post('/scientific_research/', data);
+  return response.data;
+};
 
 // API: Lấy chi tiết nghiên cứu khoa học
 export const fetchScientificResearchDetails = async (id) => {
@@ -135,8 +140,41 @@ export const fetchSponsorshipProposalDetails = async (id) => {
 };
 
 // API: Cập nhật trạng thái đề xuất tài trợ
-export const updateSponsorshipProposalStatus = async (id, status) => {
-  const response = await api.put(`/sponsorship_proposal/${id}/`, { status });
+export const updateSponsorshipProposalStatus = async (id, updatedProposal) => {
+  try {
+    const response = await api.put(`/sponsorship_proposal/${id}`, updatedProposal); // Gửi toàn bộ payload
+    return response.data;
+  } catch (error) {
+    console.error('Lỗi khi cập nhật tài trợ:', error.response || error);
+    throw error; // Ném lỗi để xử lý ở nơi gọi hàm
+  }
+};
+
+// API: Gửi dữ liệu hoạt động nghiên cứu khoa học
+export const submitScientificActivities = async (activity) => {
+  try {
+    const response = await api.post('/scientific_research_activities/', activity);
+    return response.data;
+  } catch (error) {
+    console.error('Lỗi khi gửi dữ liệu hoạt động nghiên cứu:', error.response || error);
+    throw error; // Ném lỗi để xử lý ở nơi gọi hàm
+  }
+};
+
+// API: lấy danh sách hoạt động nghiên cứu khoa học
+export const getListScientificActivities = async (activity) => {
+  try {
+    const response = await api.get('/scientific_research_activities/', activity);
+    return response.data;
+  } catch (error) {
+    console.error('Lỗi khi gửi dữ liệu hoạt động nghiên cứu:', error.response || error);
+    throw error; // Ném lỗi để xử lý ở nơi gọi hàm
+  }
+};
+
+// tìm người dùng 
+export const searchUsers = async (query) => {
+  const response = await api.get(`/user/search/?q=${query}`);
   return response.data;
 };
 export default api;

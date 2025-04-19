@@ -1,96 +1,201 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { fetchScientificResearch, getListScientificActivities, createSponsorshipProposal } from '../../api/api';
 
-export default function FundingForm({ formData, setFormData, onSubmit, nckhOptions, hdNckhOptions, setShowFormModal }) {
-    // Hàm xử lý thay đổi giá trị của các trường trong form
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+export default function FundingForm({ setShowFormModal }) {
+  const [formData, setFormData] = useState({
+    s_research: '',
+    funding: '',
+    context: '',
+    status: 'OPEN',
+  });
+  const [nckhOptions, setNckhOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [group, setGroup] = useState('');
+  const [showWarning, setShowWarning] = useState(false);
+  const [studentGuidanceList, setStudentGuidanceList] = useState([]);
+
+  // Lấy danh sách NCKH từ API
+  useEffect(() => {
+    const fetchNckhOptions = async () => {
+      try {
+        const response = await fetchScientificResearch();
+        setNckhOptions(response.data);
+      } catch (error) {
+        console.error('Lỗi khi tải danh sách NCKH:', error);
+      }
     };
+    fetchNckhOptions();
+  }, []);
 
-    // Hàm xử lý khi form được submit
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onSubmit(formData);
+  // Lấy danh sách STUDENT_GUIDANCE để show bên phải
+  useEffect(() => {
+    const fetchStudentGuidance = async () => {
+      try {
+        const activities = await getListScientificActivities();
+        const filtered = activities.filter(act => act.group === 'STUDENT_GUIDANCE');
+        setStudentGuidanceList(filtered);
+      } catch (error) {
+        setStudentGuidanceList([]);
+      }
     };
+    fetchStudentGuidance();
+  }, []);
 
-    return (
-        <form onSubmit={handleSubmit}>
+  // Khi chọn NCKH, lấy group từ getListScientificActivities
+  useEffect(() => {
+    const checkGroup = async () => {
+      if (!formData.s_research) {
+        setGroup('');
+        setShowWarning(false);
+        return;
+      }
+      try {
+        const activities = await getListScientificActivities();
+        // Tìm hoạt động có id trùng với sr_activities
+        const found = activities.find(act => act.id === formData.s_research);
+        if (found) {
+          setGroup(found.group);
+          setShowWarning(found.group !== 'STUDENT_GUIDANCE');
+        } else {
+          setGroup('');
+          setShowWarning(true);
+        }
+      } catch (error) {
+        setGroup('');
+        setShowWarning(true);
+      }
+    };
+    checkGroup();
+  }, [formData.s_research]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      await createSponsorshipProposal(formData);
+      alert('Đề xuất tài trợ đã được tạo thành công!');
+      setShowFormModal(false);
+    } catch (error) {
+      console.error('Lỗi khi tạo đề xuất tài trợ:', error);
+      alert('Không thể tạo đề xuất tài trợ. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-transparent backdrop-blur-sm z-50">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-[800px] flex gap-6">
+        {/* Form bên trái */}
+        <div className="w-1/2">
+          <h2 className="text-xl font-bold mb-4">Tạo đề xuất tài trợ</h2>
+          <form onSubmit={handleSubmit}>
+            {/* Tên NCKH */}
             <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="ten_nckh">
-                    Tên NCKH
-                </label>
-                <select
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    id="ten_nckh"
-                    name="ten_nckh"
-                    value={formData.ten_nckh}
-                    onChange={handleChange}
-                >
-                    <option value="">Chọn Tên NCKH</option>
-                    {nckhOptions.map((option, index) => (
-                        <option key={index} value={option.name}>{option.name}</option>
-                    ))}
-                </select>
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="s_research">
+                Tên NCKH
+              </label>
+              <select
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="s_research"
+                name="s_research"
+                value={formData.s_research}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Chọn Tên NCKH</option>
+                {nckhOptions.map((option) => (
+                  <option key={option.sr_activities} value={option.sr_activities}>
+                    {option.name}
+                  </option>
+                ))}
+              </select>
             </div>
+
+            {/* Thông báo nếu không phải nhóm STUDENT_GUIDANCE */}
+            {showWarning && (
+              <div className="mb-4 text-red-500 text-sm">
+                Nghiên cứu này không được đề xuất kinh phí
+              </div>
+            )}
+
+            {/* Kinh phí đề xuất */}
             <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="hd_nckh_id">
-                    Loại đề xuất
-                </label>
-                <select
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    id="hd_nckh_id"
-                    name="hd_nckh_id"
-                    value={formData.hd_nckh_id}
-                    onChange={handleChange}
-                >
-                    <option value="">Chọn Loại đề xuất</option>
-                    {hdNckhOptions.map((option, index) => (
-                        <option key={index} value={option.id}>{option.type}</option>
-                    ))}
-                </select>
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="funding">
+                Kinh phí đề xuất
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="funding"
+                name="funding"
+                type="number"
+                placeholder="Kinh phí đề xuất"
+                value={formData.funding}
+                onChange={handleChange}
+                required
+                disabled={showWarning}
+              />
             </div>
+
+            {/* Nội dung */}
             <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="budget">
-                    Kinh phí đề xuất
-                </label>
-                <input
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    id="budget"
-                    name="budget"
-                    type="text"
-                    placeholder="Kinh phí đề xuất"
-                    value={formData.budget}
-                    onChange={handleChange}
-                />
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="context">
+                Nội dung
+              </label>
+              <textarea
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="context"
+                name="context"
+                placeholder="Nội dung"
+                value={formData.context}
+                onChange={handleChange}
+                required
+                disabled={showWarning}
+              />
             </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="content">
-                    Nội dung
-                </label>
-                <textarea
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    id="content"
-                    name="content"
-                    placeholder="Nội dung"
-                    value={formData.content}
-                    onChange={handleChange}
-                />
-            </div>
+
+            {/* Buttons */}
             <div className="flex items-center justify-between">
-                <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded"
-                    type="submit"
-                >
-                    Tạo
-                </button>
-                <button
-                    className="bg-red-500 text-white px-4 py-2 rounded ml-2"
-                    type="button"
-                    onClick={() => setShowFormModal(false)}
-                >
-                    Hủy
-                </button>
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                type="submit"
+                disabled={loading || showWarning}
+              >
+                {loading ? 'Đang tải...' : 'Tạo'}
+              </button>
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                type="button"
+                onClick={() => setShowFormModal(false)}
+              >
+                Hủy
+              </button>
             </div>
-        </form>
-    );
+          </form>
+        </div>
+        {/* Danh sách STUDENT_GUIDANCE bên phải */}
+        <div className="w-1/2 border-l pl-6 max-h-[500px] overflow-auto">
+          <h3 className="text-lg font-semibold mb-2 text-blue-700">Các đề tài nhóm Hướng dẫn sinh viên</h3>
+          {studentGuidanceList.length === 0 ? (
+            <div className="text-gray-400">Không có dữ liệu.</div>
+          ) : (
+            <ul className="space-y-2">
+              {studentGuidanceList.map(item => (
+                <li key={item.id} className="border rounded p-2 bg-gray-50">
+                  <div className="font-medium">{item.content}</div>
+                  <div className="text-xs text-gray-500">ID: {item.id}</div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }

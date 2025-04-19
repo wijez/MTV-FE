@@ -71,7 +71,6 @@ export default function ScientificAdminLayout() {
                   <div className="flex-1 ml-4">
                     <p className="font-bold">Tên: {request.name || 'Không có tên'}</p>
                     <p className="text-sm text-gray-600">Trạng thái: {request.status || 'Không có trạng thái'}</p>
-                    <p className="text-sm text-gray-600">Cấp độ: {request.level || 'Không có cấp độ'}</p>
                     <p className="text-sm text-gray-600">
                       Ngày tạo: {new Date(request.created_at).toLocaleDateString('vi-VN')}
                     </p>

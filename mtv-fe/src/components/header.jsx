@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import avatar from '../assets/avatagit.jpg';
+import Profile from './Common/Profile'; 
 
 const HeaderPage = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-
+  const [showProfile, setShowProfile] = useState(false); 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
@@ -14,6 +15,16 @@ const HeaderPage = () => {
     document.documentElement.classList.toggle('dark');
   };
 
+  const handleLogout = () => {
+    const confirmLogout = window.confirm('Bạn có muốn thoát hay không?');
+    if (confirmLogout) {
+      localStorage.removeItem('access');
+      localStorage.removeItem('refresh');
+      localStorage.removeItem('role');
+
+      navigate('/'); 
+    }
+  };
   return (
     <header
       className={`flex justify-between items-center p-4 ${
@@ -73,8 +84,19 @@ const HeaderPage = () => {
         {menuOpen && (
           <div className="absolute top-16 right-4 bg-white shadow-lg rounded-lg p-4 z-50">
             <ul>
-              <li className="p-2 hover:bg-gray-200 cursor-pointer">Tài khoản</li>
-              <li className="p-2 hover:bg-gray-200 cursor-pointer">Đăng xuất</li>
+              <li
+                className="p-2 hover:bg-gray-200 cursor-pointer"
+                onClick={() => {
+                  setShowProfile(true); // Hiển thị dialog Profile
+                  setMenuOpen(false); // Đóng menu
+                }}
+              >
+                Tài khoản
+              </li>
+              <li className="p-2 hover:bg-gray-200 cursor-pointer"
+                onClick={handleLogout}
+                >Đăng xuất
+                </li>
               <li
                 className="p-2 hover:bg-gray-200 cursor-pointer"
                 onClick={toggleDarkMode}
@@ -91,6 +113,9 @@ const HeaderPage = () => {
           </div>
         )}
       </div>
+
+      {/* Hiển thị dialog Profile */}
+      {showProfile && <Profile onClose={() => setShowProfile(false)} />}
     </header>
   );
 };

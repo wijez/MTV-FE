@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { updateSponsorshipProposalStatus, fetchSponsorshipProposalDetails } from '../../api/api';
 import { toast, ToastContainer } from 'react-toastify';
 
-export default function AccessFunding({ proposalId, currentStatus, onClose }) {
+export default function AccessFunding({ proposalId, currentStatus, onClose, onStatusChange }) {
   const [status, setStatus] = useState(currentStatus);
   const [loading, setLoading] = useState(false);
   const [proposalDetails, setProposalDetails] = useState(null);
 
-  // Lấy thông tin chi tiết của đề xuất tài trợ
   useEffect(() => {
     const fetchDetails = async () => {
       try {
@@ -25,10 +24,16 @@ export default function AccessFunding({ proposalId, currentStatus, onClose }) {
   const handleStatusChange = async (newStatus) => {
     setLoading(true);
     try {
-      await updateSponsorshipProposalStatus(proposalId, newStatus);
+      const updatedProposal = {
+        ...proposalDetails,
+        status: newStatus,
+      };
+
+      await updateSponsorshipProposalStatus(proposalId, updatedProposal);
       setStatus(newStatus);
       toast.success(`Trạng thái đã được cập nhật thành ${newStatus}`);
-      onClose();
+      onStatusChange(); // Gọi callback để reload danh sách
+      onClose(); // Đóng dialog
     } catch (error) {
       console.error('Lỗi khi cập nhật trạng thái:', error);
       toast.error('Không thể cập nhật trạng thái. Vui lòng thử lại.');
@@ -49,7 +54,7 @@ export default function AccessFunding({ proposalId, currentStatus, onClose }) {
   }
 
   return (
-<div className="fixed inset-0 flex items-center justify-center bg-transparent backdrop-blur-sm z-50">
+    <div className="fixed inset-0 flex items-center justify-center bg-transparent backdrop-blur-sm z-50">
       <div className="bg-white rounded-lg shadow-lg p-6 w-96">
         <h2 className="text-xl font-bold mb-4">Chi tiết đề xuất tài trợ</h2>
         <div className="border border-gray-300 rounded-lg p-4 mb-4">
@@ -73,14 +78,14 @@ export default function AccessFunding({ proposalId, currentStatus, onClose }) {
         <div className="flex flex-col space-y-4">
           <button
             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
-            onClick={() => handleStatusChange('APPROVED')}
+            onClick={() => handleStatusChange('PASSED')}
             disabled={loading}
           >
             Duyệt
           </button>
           <button
             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
-            onClick={() => handleStatusChange('REJECTED')}
+            onClick={() => handleStatusChange('NOT_PASSED')}
             disabled={loading}
           >
             Từ chối

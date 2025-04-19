@@ -7,7 +7,7 @@ import Pagination from '@mui/material/Pagination';
 
 export default function ScientificLayout() {
   const [showForm, setShowForm] = useState(false);
-  const [researchList, setResearchList] = useState([]);
+  const [researchList, setResearchList] = useState([]); // Khởi tạo với mảng rỗng
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -19,14 +19,20 @@ export default function ScientificLayout() {
     navigate(`scientific-details/${id}`);
   };
 
-
   const fetchResearchList = async () => {
     try {
       const data = await fetchScientificResearch(); 
-      setResearchList(data);
+      if (Array.isArray(data)) {
+        setResearchList(data); // Đảm bảo chỉ lưu mảng
+      } else {
+        console.error('API không trả về mảng:', data);
+        setResearchList([]); // Đặt giá trị mặc định là mảng rỗng
+      }
       setLoading(false);
     } catch (error) {
-      setError(error);
+      console.error('Lỗi khi tải danh sách nghiên cứu:', error);
+      setError('Không thể tải danh sách nghiên cứu.');
+      setResearchList([]); // Đặt giá trị mặc định là mảng rỗng
       setLoading(false);
     }
   };
@@ -45,15 +51,13 @@ export default function ScientificLayout() {
     setCurrentPage(value);
   };
 
-  const paginatedResearchList = researchList.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const paginatedResearchList = Array.isArray(researchList)
+    ? researchList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+    : []; // Đảm bảo `slice` chỉ được gọi trên mảng
 
   return (
     <div className="container mx-auto p-4">
-
-      { showForm && (
+      {showForm && (
         <ScientificForm
           onSubmit={handleFormSubmit} // Xử lý khi form được submit
           onClose={() => setShowForm(false)} // Đóng form

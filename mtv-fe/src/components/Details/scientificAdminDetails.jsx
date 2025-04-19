@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchScientificResearchDetails, updateScientificResearchStatus } from '../../api/api';
 import { toast, ToastContainer } from 'react-toastify';
-import AccessFunding from '../Form/AccessFunding';
+import AccessFunding from '../Common/AccessFunding';
 
 
 export default function ScientificAdminDetails() {
@@ -23,7 +23,7 @@ export default function ScientificAdminDetails() {
       } catch (error) {
         const cachedData = localStorage.getItem(`research_${id}`);
         if (cachedData) {
-          setResearch(JSON.parse(cachedData)); // Lấy dữ liệu từ localStorage nếu có
+          setResearch(JSON.parse(cachedData)); 
         } else {
           setError('Không thể tải dữ liệu và không có dữ liệu đã lưu.');
           toast.error('Không thể tải dữ liệu và không có dữ liệu đã lưu.');
