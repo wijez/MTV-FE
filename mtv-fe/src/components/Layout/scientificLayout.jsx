@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ScientificForm from '../Form/scientificForm';
-import { fetchScientificResearch } from '../../api/api'; // Import API từ api.jsx
+import { fetchUserScientificResearch,  fetchScientificResearchDetails } from '../../api/api'; // Import API từ api.jsx
 import { Undo2 } from 'lucide-react';
 import Pagination from '@mui/material/Pagination';
 
@@ -21,18 +21,21 @@ export default function ScientificLayout() {
 
   const fetchResearchList = async () => {
     try {
-      const data = await fetchScientificResearch(); 
-      if (Array.isArray(data)) {
-        setResearchList(data); // Đảm bảo chỉ lưu mảng
-      } else {
-        console.error('API không trả về mảng:', data);
-        setResearchList([]); // Đặt giá trị mặc định là mảng rỗng
-      }
+      const userId = localStorage.getItem('userId'); // hoặc 'user_id'
+      const userSRList = await fetchUserScientificResearch(userId);
+      const researchIds = userSRList.map(item => item.scientific_research);
+  
+      // Lấy chi tiết từng nghiên cứu khoa học
+      const researchDetails = await Promise.all(
+        researchIds.map(id => fetchScientificResearchDetails(id))
+      );
+  
+      setResearchList(researchDetails);
       setLoading(false);
     } catch (error) {
       console.error('Lỗi khi tải danh sách nghiên cứu:', error);
       setError('Không thể tải danh sách nghiên cứu.');
-      setResearchList([]); // Đặt giá trị mặc định là mảng rỗng
+      setResearchList([]);
       setLoading(false);
     }
   };

@@ -23,8 +23,10 @@ const LoginForm = () => {
       const decodedToken = jwtDecode(data.access);
       console.log('Decoded Token:', decodedToken); 
       const role = decodedToken.role; 
+      const userId = decodedToken.user_id;
 
       localStorage.setItem('role', role);
+      localStorage.setItem('userId', userId);
   
       if (role === 'ADMIN') {
         navigate('/home-admin'); 

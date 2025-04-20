@@ -177,4 +177,42 @@ export const searchUsers = async (query) => {
   const response = await api.get(`/user/search/?q=${query}`);
   return response.data;
 };
+
+export const fetchUserScientificResearch = async (userId) => {
+  const res = await api.get(`/user-scientific-research/user_sr?search=${userId}`);
+  return res.data; 
+}
+
+export const uploadDocuments = async (id, file) => {
+  const token = localStorage.getItem('access');
+  const formData = new FormData();
+  formData.append('file_zip', file);
+
+  return api.put(
+    `/scientific_research/${id}/update_data`,
+    formData,
+    {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    }
+  );
+};
+
+export const uploadBanner = async (id, file) => {
+  const token = localStorage.getItem('access_token');
+  const formData = new FormData();
+  formData.append('file_banner', file);
+  return axios.put(
+    `/scientific_research/${id}/update_banner`,
+    formData,
+    {
+      baseURL: 'http://localhost:8000',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
+};
 export default api;
