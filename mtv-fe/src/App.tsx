@@ -8,7 +8,6 @@ import Report from './components/Page/report';
 import ScientificSuccess from './components/Page/ScientificSuccess';
 
 import ScientificDetails from './components/Details/ScientificDetails';
-
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 import HomeAdmin from './components/AdminPage/home';
@@ -19,6 +18,8 @@ import Teacher from './components/AdminPage/teacher';
 import ScientificAdmin from './components/AdminPage/scientificdetails';
 import ActivitiesScientific from './components/AdminPage/ActivitiesScientific';
 import ActivitiesSRList from './components/AdminPage/ActivititesSRList';
+import UserPoints from './components/AdminPage/UserPoints';
+import TeacherDetails from './components/AdminPage/teacherDetails';
 
 import './App.css';
 
@@ -41,8 +42,10 @@ function App() {
         <Route path="/funding-requests" element={<ProtectedRoute role="ADMIN"><FundingRequest /></ProtectedRoute>} />
         <Route path="/dashboard" element={<Dashboard/>} />
         <Route path="/teacher" element={<ProtectedRoute role="ADMIN"><Teacher /></ProtectedRoute>} />
+        <Route path="/teacher-details/:id" element={<ProtectedRoute role="ADMIN">< TeacherDetails/></ProtectedRoute>} />
         <Route path="/scientific-contracts" element={<ProtectedRoute role="ADMIN"><ActivitiesScientific/></ProtectedRoute>} />
         <Route path="/scientific-contracts-list" element={<ProtectedRoute role="ADMIN"><ActivitiesSRList/></ProtectedRoute>} />
+        <Route path="/user_points" element={<ProtectedRoute role="ADMIN"><UserPoints/></ProtectedRoute>} />
       </Routes>
      
     </>

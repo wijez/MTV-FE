@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserRoundPlus, BellPlus, Eye, Telescope, ChartLine, FileChartColumn } from 'lucide-react';
+import { Clock, UserRoundPlus, LayoutDashboard, BellPlus, Eye, Telescope, ChartLine, FileChartColumn } from 'lucide-react';
 
 const Menu = () => {
   const navigate = useNavigate();
@@ -11,6 +11,13 @@ const Menu = () => {
       <h1>MTV</h1>
     </div>
     <div className="pt-1 bg-white text-gray-800 h-screen p-4 flex flex-col space-y-4 transform text-sm transition-transform md:relative md:translate-x-0 overflow-y-auto">
+    <button
+        className="flex items-center space-x-2 hover:bg-blue-600 hover:text-white p-3 rounded transition cursor-pointer"
+        onClick={() => navigate('/home-admin')}
+      >
+        <LayoutDashboard />
+        <span>Dashboard</span>
+      </button>
       <button
         className="flex items-center space-x-2 hover:bg-blue-600 hover:text-white p-3 rounded transition cursor-pointer"
         onClick={() => navigate('/teacher')}
@@ -52,6 +59,13 @@ const Menu = () => {
       >
         <FileChartColumn />
         <span>Hướng dẫn Nghiên cứu</span>
+      </button>
+      <button
+        className="flex items-center space-x-2 hover:bg-blue-600 hover:text-white p-3 rounded transition cursor-pointer"
+        onClick={() => navigate('/user_points')}
+      >
+        <Clock />
+        <span>Điểm nghiên cứu</span>
       </button>
     </div>
     </>

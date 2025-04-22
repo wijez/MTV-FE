@@ -1,36 +1,52 @@
 import React, { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, Legend, Tooltip } from 'recharts';
-import { fetchScientificResearch } from '../../api/api';
-
+import { fetchScientificResearch, fetchUsers, fetchSponsorshipProposals  } from '../../api/api';
+import { Binoculars, Coins, CircleUserRound } from 'lucide-react';
 const HomeAdminLayout = ({ children }) => {
   const [data, setData] = useState([
     { name: 'Nghiên cứu đang mở', value: 0 },
     { name: 'Nghiên cứu đã hoàn thành', value: 0 },
+    { name: 'Nghiên cứu đang thực hiện', value: 0 },
   ]);
+  const [totalResearch, setTotalResearch] = useState(0);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [totalFunding, setTotalFunding] = useState(0);
 
-  const COLORS = ['#FF8042', '#0088FE']; 
+  const COLORS = ['#FF8042', '#0088FE', '#00C49F'];
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetchScientificResearch();
-        const researchList = response.data;
+        // Lấy nghiên cứu
+        const researchRes = await fetchScientificResearch();
+        const researchList = researchRes.data;
+        setTotalResearch(researchList.length);
 
         if (researchList.length === 0) {
-          console.warn('Không có dữ liệu nghiên cứu.');
           setData([
             { name: 'Nghiên cứu đang mở', value: 0 },
             { name: 'Nghiên cứu đã hoàn thành', value: 0 },
+            { name: 'Nghiên cứu đang thực hiện', value: 0 },
           ]);
-          return;
+        } else {
+          const openCount = researchList.filter((item) => item.status === 'OPEN').length;
+          const passedCount = researchList.filter((item) => item.status === 'COMPLETE').length;
+          const processCount = researchList.filter((item) => item.status === 'PROCESS').length;
+          setData([
+            { name: 'Nghiên cứu đang mở', value: openCount },
+            { name: 'Nghiên cứu đã hoàn thành', value: passedCount },
+            { name: 'Nghiên cứu đang thực hiện', value: processCount },
+          ]);
         }
-        const openCount = researchList.filter((item) => item.status === 'OPEN').length;
-        const passedCount = researchList.filter((item) => item.status === 'COMPLETE').length;
 
-        setData([
-          { name: 'Nghiên cứu đang mở', value: openCount },
-          { name: 'Nghiên cứu đã hoàn thành', value: passedCount },
-        ]);
+        // Lấy user
+        const usersRes = await fetchUsers();
+        setTotalUsers(usersRes.length);
+
+        // Lấy yêu cầu kinh phí
+        const fundingRes = await fetchSponsorshipProposals();
+        setTotalFunding(fundingRes.length);
+
       } catch (error) {
         console.error('Lỗi khi gọi API:', error);
       }
@@ -65,6 +81,23 @@ const HomeAdminLayout = ({ children }) => {
               <Legend />
             </PieChart>
           </div>
+          <div className="flex justify-around mt-8 gap-6">
+          <div className="bg-blue-50 rounded-xl shadow p-6 flex-1 flex flex-col items-center">
+            <span className="text-gray-600 mb-2">Nghiên cứu</span>
+            <Binoculars className=' text-blue-600' />
+            <span className="text-3xl font-bold text-blue-600">{totalResearch}</span>
+          </div>
+          <div className="bg-green-50 rounded-xl shadow p-6 flex-1 flex flex-col items-center">
+            <span className="text-gray-600 mb-2">Người dùng</span>
+            <CircleUserRound className='text-gray-600' />
+            <span className="text-3xl font-bold text-green-600">{totalUsers}</span>
+          </div>
+          <div className="bg-pink-50 rounded-xl shadow p-6 flex-1 flex flex-col items-center">
+            <span className="text-gray-600 mb-2">Kinh phí đề xuất</span>
+            <Coins className='text-pink-600' />
+            <span className="text-3xl font-bold text-pink-600">{totalFunding}</span>
+          </div>
+        </div>
         </div>
 
         {/* Nội dung khác */}

@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import avatar from '../assets/avatagit.jpg';
 import Profile from './Common/Profile'; 
-
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 const HeaderPage = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [showProfile, setShowProfile] = useState(false); 
+
+  const navigate = useNavigate();
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
@@ -21,8 +24,10 @@ const HeaderPage = () => {
       localStorage.removeItem('access');
       localStorage.removeItem('refresh');
       localStorage.removeItem('role');
+      localStorage.removeItem('userId');
 
       navigate('/'); 
+      toast.success('Đăng xuất thành công!');
     }
   };
   return (
@@ -41,6 +46,7 @@ const HeaderPage = () => {
             viewBox="0 0 63 63"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
+            onClick={() => navigate('/home')}
           >
             <path
               d="M31.5 60.75C47.6543 60.75 60.75 47.6543 60.75 31.5C60.75 15.3457 47.6543 2.25 31.5 2.25C15.3457 2.25 2.25 15.3457 2.25 31.5C2.25 47.6543 15.3457 60.75 31.5 60.75Z"
@@ -60,6 +66,7 @@ const HeaderPage = () => {
               strokeWidth="4"
             />
           </svg>
+         
         </div>
 
         {/* Tìm kiếm */}

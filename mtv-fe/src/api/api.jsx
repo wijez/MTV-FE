@@ -71,7 +71,7 @@ export const fetchScientificResearchDetails = async (id) => {
 
 // API: Cập nhật trạng thái nghiên cứu khoa học
 export const updateScientificResearchStatus = async (id, payload) => {
-  const response = await api.put(`/scientific_research/${id}/`, payload);
+  const response = await api.put(`/scientific_research/${id}`, payload);
   return response.data;
 };
 
@@ -105,12 +105,22 @@ export const createUser = async (userData) => {
   return response.data;
 };
 
+// API: thông tin người dùng
+export const fetchMe = async () => {
+  const response = await api.get('/user/read_me/');
+  return response.data;
+};
+
 // API: Lấy danh sách người dùng
 export const fetchUsers = async () => {
   const response = await api.get('/user/'); 
   return response.data;
 };
 
+export const fetchUserDetails = async (id) => {
+  const res = await api.get(`/user/${id}`);
+  return res.data;
+};
 
 // API: Import danh sách người dùng từ CSV
 export const importUsersFromCSV = async (formData) => {
@@ -214,5 +224,25 @@ export const uploadBanner = async (id, file) => {
       },
     }
   );
+};
+export const sendScientificProcessingRequest = async (id, data) => {
+  const payload = {
+    name: data.name,
+    number_member: data.number_member,
+    description: data.description,
+    status: 'PROCESS', 
+    quantity: data.quantity,
+    time_volume: data.time_volume,
+    documents: data.documents,
+    data: data.data,
+    sr_activities: data.sr_activities?.id || data.sr_activities,
+  };
+  console.log('Payload:', payload); 
+  const response = await api.put(`/scientific_research/${id}`, payload, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return response.data;
 };
 export default api;
