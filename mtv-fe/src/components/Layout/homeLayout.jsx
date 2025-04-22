@@ -7,32 +7,19 @@ import Statistical from './statistical'
 
 function HomeLayout() {
   return (
-    <>
-     <div className="pt-30 min-h-screen flex flex-col md:flex-row  bg-blue-700">
-      {/* Left Column */}
-      <div className="flex flex-col w-full md:w-1/2">
-        <div className="flex-1  md:px-10 md:py-3">
+    <div className="min-h-screen bg-gradient-to-br from-blue-700 via-blue-400 to-blue-100 py-10 px-2 md:px-10">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="flex flex-col gap-6">
           <InfoUser />
-        </div>
-        <div className="flex-1 md:px-10 md:pb-3 flex items-center justify-center">
           <Propose />
-        </div>
-        <div className="flex-1 md:px-10 md:py-3">
           <Statistical />
         </div>
-      </div>
-
-      {/* Right Column */}
-      <div className="flex flex-col w-full md:w-1/2">
-        <div className="flex-1 md:px-10 md:py-3">
+        <div className="flex flex-col gap-6">
           <NotificationLayout />
-        </div>
-        <div className="flex-2 md:px-10 md:pt-2 md:my-3">
-          <ScientificResearch/>
+          <ScientificResearch />
         </div>
       </div>
     </div>
-    </>
   )
 }
 

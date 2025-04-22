@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import HeaderPage from '../header';
-import { fetchScientificResearchDetails, uploadDocuments, uploadBanner } from '../../api/api'; 
+import { fetchScientificResearchDetails, uploadDocuments, 
+  uploadBanner, sendScientificProcessingRequest } from '../../api/api'; 
 import JSZip from 'jszip'; 
+import { toast } from 'react-toastify';
 
 export default function ScientificDetails() {
   const { id } = useParams();
@@ -44,6 +46,24 @@ export default function ScientificDetails() {
 
     // Nếu có file text, chờ đọc xong
     Promise.all(previews).then(setFilePreviews);
+  };
+
+  const handleSendRequest = async () => {
+    if (research.status === 'PROCESS') {
+      toast.info('Bạn đã gửi yêu cầu, hãy để admin xem xét!');
+      return;
+    }
+    if (research.status === 'COMPLETE') {
+      toast.warn('Nghiên cứu đã hoàn thành, không thể gửi yêu cầu!');
+      return;
+    }
+    try {
+      await sendScientificProcessingRequest(research.id, research);
+      toast.success('Gửi yêu cầu thành công!');
+      setResearch({ ...research, status: 'PROCESS' });
+    } catch (err) {
+      toast.error('Gửi yêu cầu thất bại!');
+    }
   };
 
   const handleUploadDocuments = async () => {
@@ -123,7 +143,7 @@ export default function ScientificDetails() {
       {/* Modal xem trước file */}
       {modalPreview && (
         <div className="fixed inset-0 flex items-center justify-center bg-transparent backdrop-blur-sm z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl w-full relative overflow-auto max-h-[90vh]">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl w-full relative overflow-auto max-h-[80vh]">
             <button
               className="absolute top-2 right-2 text-2xl text-gray-700 hover:text-red-500"
               onClick={() => setModalPreview(null)}
@@ -152,7 +172,7 @@ export default function ScientificDetails() {
         </div>
       )}
 
-      <div className="pt-40 container mx-auto p-4">
+      <div className="pt-20 container mx-auto p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Cột trái: Thông tin nghiên cứu */}
           <div>
@@ -162,13 +182,7 @@ export default function ScientificDetails() {
             <p><strong>Thời gian tạo:</strong> {new Date(research.created_at).toLocaleDateString('vi-VN')}</p>
             <p><strong>Số lượng thành viên:</strong> {research.number_member}</p>
             
-            {/* Nút thêm tệp đính kèm */}
-            <button
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition mt-4 mr-2"
-              onClick={() => setShowDocInput(true)}
-            >
-              Thêm tệp đính kèm
-            </button>
+           
             {showDocInput && (
               <div className="mt-2">
                 <input
@@ -246,16 +260,10 @@ export default function ScientificDetails() {
               </div>
             )}
 
-            {/* Nút thêm banner */}
-            <button
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition mt-4"
-              onClick={() => setShowBannerInput(true)}
-            >
-              Thêm banner
-            </button>
-            {/* Tệp đính kèm nếu có */}
+           
+            {/* Tệp đính kèm  */}
             <div className="mt-6">
-  <h2 className="text-xl font-semibold mb-4">File nghiên cứu (data)</h2>
+  <h2 className="text-xl font-semibold mb-4">Tài liệu nghiên cứu</h2>
   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
     {Array.isArray(research.data) && research.data.map((url, index) => (
       <div key={index} className="border border-gray-300 rounded p-2">
@@ -264,21 +272,21 @@ export default function ScientificDetails() {
             src={`${minioHost}/${url}`}
             alt={`File ${index + 1}`}
             className="w-full h-auto max-h-64 object-contain cursor-pointer"
-            onClick={() => setModalPreview({ type: 'image', url: `http://localhost:8000/${url}`, name: url })}
+            onClick={() => setModalPreview({ type: 'image', url: `${minioHost}/${url}`, name: url })}
           />
         ) : url.match(/\.(mp4|webm|ogg|mkv)$/) ? (
           <video
             src={`${minioHost}/${url}`}
             controls
             className="w-full h-auto max-h-64 object-contain cursor-pointer"
-            onClick={() => setModalPreview({ type: 'video', url: `http://localhost:8000/${url}`, name: url })}
+            onClick={() => setModalPreview({ type: 'video', url: `${minioHost}/${url}`, name: url })}
           />
         ) : url.match(/\.(pdf)$/) ? (
           <iframe
             src={`${minioHost}/${url}`}
             title={`PDF file ${index + 1}`}
             className="w-full h-64 border border-gray-300 rounded cursor-pointer"
-            onClick={() => setModalPreview({ type: 'pdf', url: `http://localhost:8000/${url}`, name: url })}
+            onClick={() => setModalPreview({ type: 'pdf', url: `${minioHost}/${url}`, name: url })}
           ></iframe>
         ) : (
           <div className="flex flex-col items-center">
@@ -297,13 +305,29 @@ export default function ScientificDetails() {
     ))}
   </div>
 </div>
+            {/* Nút thêm banner */}
+            <button
+              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition mt-4 p-2 mr-2"
+              onClick={() => setShowBannerInput(true)}
+            >
+              Thêm banner
+            </button>
+            {/* Nút thêm tệp đính kèm */}
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition mt-4 mr-2"
+              onClick={() => setShowDocInput(true)}
+            >
+              Thêm tệp đính kèm
+            </button>
             {/* Nút gửi yêu cầu */}
+            {research.status !== 'COMPLETE' && (
             <button
               className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition mt-6"
-              onClick={() => alert('Chức năng gửi yêu cầu')}
+              onClick={handleSendRequest}
             >
               Gửi yêu cầu
             </button>
+            )}  
           </div>
 
           {/* Cột phải: Nội dung sr_activities */}

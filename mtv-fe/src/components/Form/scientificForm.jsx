@@ -87,31 +87,55 @@ export default function ScientificForm({ onSubmit, onClose }) {
   // Submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Đảm bảo các trường số là số, không phải chuỗi rỗng
+  
+    if (!formData.time_volume || Number(formData.time_volume) <= 0) {
+      toast.error('Vui lòng chọn hoạt động NCKH để có thời lượng hợp lệ');
+      return;
+    }
+  
+    const timeVolume = Number(formData.time_volume);
     const submitData = {
       ...formData,
-      number_member: Number(formData.number_member) || 0,
-      quantity: Number(formData.quantity) || 0,
-      time_volume: Number(formData.time_volume) || 0,
+      name: formData.name.trim(),
+      description: formData.description.trim(),
+      number_member: Math.max(1, Number(formData.number_member) || 1),
+      quantity: Math.max(0, Number(formData.quantity) || 0),
+      time_volume: timeVolume,
+      sr_activities: formData.sr_activities || formData.data?.activityId,
       list_user: (formData.list_user || []).map(u => ({
         id: u.id,
-        point: Number(u.point) || 0
+        point: Math.max(0, Number(u.point) || 0)
       }))
     };
+  
+    const totalMemberPoints = submitData.list_user.reduce((sum, user) => sum + user.point, 0);
+  
+    if (totalMemberPoints > timeVolume) {
+      toast.error(`Tổng điểm thành viên (${totalMemberPoints}) vượt quá thời lượng (${timeVolume})`);
+      return;
+    }
+  
+    // 👉 Tính leader_point
+    let leader_point = timeVolume;
+    if (submitData.list_user.length > 0) {
+      leader_point = Math.max(0, timeVolume - totalMemberPoints);
+    }
+    submitData.leader_point = leader_point;
+  
+    console.log('Data being submitted:', submitData);
+  
     try {
       const response = await createScientificResearch(submitData);
       toast.success('Tạo nghiên cứu khoa học thành công!');
       onSubmit(response.data || response);
     } catch (error) {
-      if (error.response && error.response.data) {
-        toast.error(`Lỗi ${error.response.status}: ${JSON.stringify(error.response.data)}`);
-      } else {
-        toast.error('Đã xảy ra lỗi. Vui lòng thử lại sau.');
-      }
-      console.error('Error creating scientific research:', error);
+      const errorMsg = error.response?.data?.message || 
+                      error.response?.data?.error || 
+                      'Lỗi khi tạo nghiên cứu';
+      toast.error(`Lỗi: ${errorMsg}`);
     }
   };
-
+  
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
       <form
@@ -227,6 +251,13 @@ export default function ScientificForm({ onSubmit, onClose }) {
                   value={userObj.point}
                   onChange={e => {
                     const val = Number(e.target.value);
+                    const totalMemberPoints = formData.list_user.reduce((sum, u) => 
+                      sum + (u.id === userObj.id ? val : (u.point || 0)), 0);
+                    
+                    if (totalMemberPoints > formData.time_volume) {
+                      toast.warning(`Tổng điểm đang vượt quá thời lượng! Điểm leader sẽ bị âm`);
+                    }
+                    
                     setFormData(prev => ({
                       ...prev,
                       list_user: prev.list_user.map(u =>

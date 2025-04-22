@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchScientificResearch, getListScientificActivities, createSponsorshipProposal } from '../../api/api';
+import { fetchScientificResearch, getListScientificActivities, createSponsorshipProposal, fetchUserScientificResearch } from '../../api/api';
 
 export default function FundingForm({ setShowFormModal }) {
   const [formData, setFormData] = useState({
@@ -18,8 +18,28 @@ export default function FundingForm({ setShowFormModal }) {
   useEffect(() => {
     const fetchNckhOptions = async () => {
       try {
-        const response = await fetchScientificResearch();
-        setNckhOptions(response.data);
+        // Lấy userId hiện tại
+        const userId = localStorage.getItem('userId');
+        // Lấy các bản ghi user-scientific-research của user
+        const userResearchList = await fetchUserScientificResearch(userId);
+        // Lọc các nghiên cứu mà user là chủ nhiệm
+        const leaderResearch = userResearchList.filter(item => item.is_leader);
+  
+        // Lấy toàn bộ danh sách nghiên cứu khoa học
+        const allResearch = await fetchScientificResearch();
+        // Tạo map id -> name cho nhanh
+        const researchMap = {};
+        allResearch.data.forEach(r => {
+          researchMap[r.id] = r.name;
+        });
+  
+        // Tạo options chỉ gồm các nghiên cứu user làm chủ nhiệm
+        const myResearchOptions = leaderResearch.map(item => ({
+          sr_activities: item.scientific_research,
+          name: researchMap[item.scientific_research] || 'Không rõ tên'
+        }));
+  
+        setNckhOptions(myResearchOptions);
       } catch (error) {
         console.error('Lỗi khi tải danh sách NCKH:', error);
       }
@@ -99,7 +119,7 @@ export default function FundingForm({ setShowFormModal }) {
             {/* Tên NCKH */}
             <div className="mb-4">
               <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="s_research">
-                Tên NCKH
+                Tên Nghiên cứu
               </label>
               <select
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -109,7 +129,7 @@ export default function FundingForm({ setShowFormModal }) {
                 onChange={handleChange}
                 required
               >
-                <option value="">Chọn Tên NCKH</option>
+                <option value="">Chọn Tên Nghiên cứu</option>
                 {nckhOptions.map((option) => (
                   <option key={option.sr_activities} value={option.sr_activities}>
                     {option.name}

@@ -5,7 +5,8 @@ import Pagination from '@mui/material/Pagination';
 import defaultAvatar from '../../assets/avatagit.jpg';
 import { Filter } from 'lucide-react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material'; 
-
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify'; // Thêm import cho toast
 
 export default function TeacherLayout() {
   const [showCreateAccount, setShowCreateAccount] = useState(false);
@@ -20,10 +21,12 @@ export default function TeacherLayout() {
     department: '',
   });
   
-
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false); 
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false); // Trạng thái mở dialog Import CSV
   const [selectedFile, setSelectedFile] = useState(null); // Lưu file CSV được chọn
+
+  const navigate = useNavigate();
+
   const handleOpenCreateAccount = () => {
     setShowCreateAccount(true);
   };
@@ -234,6 +237,7 @@ export default function TeacherLayout() {
           <div
             key={user.id}
             className="flex items-center border border-gray-300 rounded-lg p-4 shadow hover:shadow-lg transition"
+            onClick={() => navigate(`/teacher-details/${user.id}`)}
           >
             {/* Avatar bên trái */}
             <img
