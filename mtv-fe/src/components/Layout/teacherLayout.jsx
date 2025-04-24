@@ -4,26 +4,27 @@ import { fetchUsers, importUsersFromCSV } from '../../api/api';
 import Pagination from '@mui/material/Pagination';
 import defaultAvatar from '../../assets/avatagit.jpg';
 import { Filter } from 'lucide-react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material'; 
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify'; // Thêm import cho toast
+import { toast } from 'react-toastify';
+import * as XLSX from 'xlsx';
 
 export default function TeacherLayout() {
   const [showCreateAccount, setShowCreateAccount] = useState(false);
   const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]); 
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
 
   const [filters, setFilters] = useState({
-    date_sort: '', // asc hoặc desc
+    date_sort: '',
     degree: '',
     department: '',
   });
-  
-  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false); 
-  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false); // Trạng thái mở dialog Import CSV
-  const [selectedFile, setSelectedFile] = useState(null); // Lưu file CSV được chọn
+
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const navigate = useNavigate();
 
@@ -35,18 +36,20 @@ export default function TeacherLayout() {
     setShowCreateAccount(false);
   };
 
-  // Gọi API để lấy danh sách người dùng
+  // Hàm reload danh sách người dùng
+  const reloadUsers = async () => {
+    try {
+      const data = await fetchUsers();
+      setUsers(data);
+      setFilteredUsers(data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  // Gọi API để lấy danh sách người dùng khi component mount
   useEffect(() => {
-    const getUsers = async () => {
-      try {
-        const data = await fetchUsers();
-        setUsers(data);
-        setFilteredUsers(data); // Khởi tạo danh sách lọc
-      } catch (error) {
-        console.error('Error fetching users:', error);
-      }
-    };
-    getUsers();
+    reloadUsers();
   }, []);
 
   // Tính toán dữ liệu hiển thị cho trang hiện tại
@@ -76,7 +79,7 @@ export default function TeacherLayout() {
       });
     }
     setFilteredUsers(filtered);
-    setCurrentPage(1); // Reset về trang đầu tiên
+    setCurrentPage(1);
   };
 
   // Lọc theo học vị
@@ -88,7 +91,7 @@ export default function TeacherLayout() {
       );
     }
     setFilteredUsers(filtered);
-    setCurrentPage(1); // Reset về trang đầu tiên
+    setCurrentPage(1);
   };
 
   // Lọc theo phòng ban
@@ -100,31 +103,71 @@ export default function TeacherLayout() {
       );
     }
     setFilteredUsers(filtered);
-    setCurrentPage(1); // Reset về trang đầu tiên
+    setCurrentPage(1);
   };
-  const handleImportCSV = async () => {
-    if (!selectedFile) {
-      alert('Vui lòng chọn một file CSV!');
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (!file) {
+      toast.error('Vui lòng chọn một file!');
       return;
     }
-
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-
-    try {
-      const response = await importUsersFromCSV(formData);
-      alert('Import thành công!');
-      const updatedUsers = await fetchUsers();
-      setUsers(updatedUsers);
-      setFilteredUsers(updatedUsers);
-      setIsImportDialogOpen(false);
-    } catch (error) {
-      console.error('Error importing CSV:', error);
-      alert('Đã xảy ra lỗi khi import CSV.');
+  
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+  
+    if (fileExtension === 'csv' || fileExtension === 'xls' || fileExtension === 'xlsx') {
+      const reader = new FileReader();
+  
+      reader.onload = (e) => {
+        const data = e.target.result;
+  
+        if (fileExtension === 'csv') {
+          // Xử lý file CSV
+          setSelectedFile(file);
+          console.log('File CSV được chọn:', file.name);
+        } else {
+          // Xử lý file Excel
+          const workbook = XLSX.read(data, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(sheet);
+          console.log('Dữ liệu từ file Excel:', jsonData);
+  
+          // Nếu cần, bạn có thể gửi `jsonData` đến API
+          setSelectedFile(file);
+        }
+      };
+  
+      if (fileExtension === 'csv') {
+        reader.readAsText(file);
+      } else {
+        reader.readAsBinaryString(file);
+      }
+    } else {
+      toast.error('Định dạng file không được hỗ trợ!');
     }
   };
-  const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
+  // Xử lý import CSV
+  const handleImportCSV = async () => {
+    if (!selectedFile) {
+      toast.error('Vui lòng chọn một file!');
+      return;
+    }
+  
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+  
+    try {
+      const response = await importUsersFromCSV(formData); // Gọi API
+      console.log('Phản hồi từ API:', response.data); 
+      toast.success('Import thành công!');
+      reloadUsers(); // Reload danh sách người dùng
+      setIsImportDialogOpen(false); // Đóng dialog
+    } catch (error) {
+      console.error('Error importing file:', error.response?.data || error.message);
+      const errorMessage = error.response?.data?.message || 'Dữ liệu không hợp lệ';
+      toast.error(`Lỗi khi import file: ${errorMessage}`);
+    }
   };
 
   return (
@@ -132,9 +175,9 @@ export default function TeacherLayout() {
       {/* Nút Import CSV, Tạo tài khoản và Lọc */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex gap-2">
-        <button
+          <button
             className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition"
-            onClick={() => setIsImportDialogOpen(true)} // Mở dialog khi nhấn nút
+            onClick={() => setIsImportDialogOpen(true)}
           >
             <span>📤</span> Import CSV
           </button>
@@ -152,7 +195,7 @@ export default function TeacherLayout() {
             onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
           >
-           <Filter />
+            <Filter />
           </button>
           {isFilterMenuOpen && (
             <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-300 rounded shadow-lg z-10">
@@ -239,27 +282,29 @@ export default function TeacherLayout() {
             className="flex items-center border border-gray-300 rounded-lg p-4 shadow hover:shadow-lg transition"
             onClick={() => navigate(`/teacher-details/${user.id}`)}
           >
-            {/* Avatar bên trái */}
             <img
               src={user.avatar || defaultAvatar}
               alt="Avatar"
               className="w-16 h-16 rounded-full mr-4"
             />
             <div className="flex-1">
-              <h3 className="text-lg font-semibold">
-                {user.full_name || 'N/A'}
-              </h3>
+              <h3 className="text-lg font-semibold">{user.full_name || 'N/A'}</h3>
               <p className="text-sm text-gray-600">
                 <strong>Trạng thái:</strong>{' '}
                 {user.is_active ? 'Đã kích hoạt' : 'Chưa kích hoạt'}
               </p>
               <p className="text-sm text-gray-600">
-                <strong>Học vị:</strong>{' '}
-                {user.profile.degree || 'N/A'}
+                <strong>Email:</strong>
+                {user.email}
+              </p>  
+              <p className="text-sm text-gray-600">
+                <strong>Học vị:</strong> {user.profile.degree || 'N/A'}
               </p>
               <p className="text-sm text-gray-600">
                 <strong>Ngày tạo:</strong>{' '}
-                {new Date(user.date_joined).toLocaleDateString('vi-VN')}
+                {user.profile?.created_at
+                  ? new Date(user.profile.created_at).toLocaleDateString('vi-VN')
+                  : 'Không xác định'}
               </p>
             </div>
           </div>
@@ -269,17 +314,35 @@ export default function TeacherLayout() {
       {/* Pagination */}
       <div className="flex justify-center mt-4">
         <Pagination
-          count={Math.ceil(filteredUsers.length / itemsPerPage)} // Tổng số trang
-          page={currentPage} // Trang hiện tại
-          onChange={handlePageChange} // Xử lý khi thay đổi trang
+          count={Math.ceil(filteredUsers.length / itemsPerPage)}
+          page={currentPage}
+          onChange={handlePageChange}
           color="primary"
           variant="outlined"
           shape="rounded"
         />
       </div>
 
+      {/* Dialog Import CSV */}
+      <Dialog open={isImportDialogOpen} onClose={() => setIsImportDialogOpen(false)}>
+        <DialogTitle>Import CSV</DialogTitle>
+        <DialogContent>
+          <input type="file" accept=".csv, .xls, .xlsx" onChange={handleFileChange} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsImportDialogOpen(false)} color="secondary">
+            Hủy
+          </Button>
+          <Button onClick={handleImportCSV} color="primary">
+            Import
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Form Tạo tài khoản */}
-      {showCreateAccount && <CreateAccount onClose={handleCloseCreateAccount} />}
+      {showCreateAccount && (
+        <CreateAccount onClose={handleCloseCreateAccount} onAccountCreated={reloadUsers} />
+      )}
     </div>
   );
 }

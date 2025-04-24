@@ -10,11 +10,11 @@ export default function CreateAccount({ onClose }) {
     profile: {
       degree: '',
       department: '',
-      country: '',
-      address: '',
-      nation: '',
-      nationality: '',
-      religion: '',
+      country: 'Quê quán',
+      address: 'Địa chỉ', 
+      nation: 'dân tộc', 
+      nationality: 'Quốc tịch', 
+      religion: 'tôn giáo', 
     },
   });
 
@@ -39,11 +39,20 @@ export default function CreateAccount({ onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Kiểm tra các trường bắt buộc
+    if (!formData.email || !formData.full_name) {
+      alert('Vui lòng nhập đầy đủ Email và Họ và tên.');
+      console.error('Thiếu trường bắt buộc: Email hoặc Họ và tên.');
+      return;
+    }
+
     try {
       const response = await createUser(formData);
       alert('Tài khoản đã được tạo thành công!');
       onClose();
     } catch (error) {
+      console.error('Lỗi khi tạo tài khoản:', error.response?.data || error.message);
       alert('Đã xảy ra lỗi khi tạo tài khoản.');
     }
   };
@@ -92,14 +101,11 @@ export default function CreateAccount({ onClose }) {
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded"
           >
+            <option value="">Chọn học vị</option>
             <option value="TS">Tiến sĩ</option>
             <option value="THS">Thạc sĩ</option>
             <option value="PGS">Phó giáo sư</option>
             <option value="GS">Giáo sư</option>
-            <option value="UN_TS_III">Tiến sĩ chưa phân hạng III</option>
-            <option value="TS_III">Tiến sĩ hạng III</option>
-            <option value="UN_TS_II">Tiến sĩ chưa phân hạng II</option>
-            <option value="TS_II">Tiến sĩ hạng II</option>
           </select>
           <select
             name="profile.department"
@@ -107,21 +113,11 @@ export default function CreateAccount({ onClose }) {
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded"
           >
+            <option value="">Chọn phòng ban</option>
             <option value="HR">Nhân sự</option>
             <option value="IT">Công nghệ thông tin</option>
             <option value="LEGAL">Pháp chế</option>
             <option value="SALES">Kinh doanh</option>
-            <option value="TOURISM">Du lịch</option>
-            <option value="FINANCE">Tài chính</option>
-            <option value="MARKETING">Marketing</option>
-            <option value="OPERATIONS">Vận hành</option>
-            <option value="ENGINEERING">Kỹ thuật</option>
-            <option value="ARCHITECTURE">Kiến trúc</option>
-            <option value="ADMINISTRATION">Quản trị</option>
-            <option value="GRAPHIC_DESIGN">Thiết kế đồ họa</option>
-            <option value="CUSTOMER_SERVICE">Chăm sóc khách hàng</option>
-            <option value="FOREIGN_LANGUAGES">Ngoại ngữ</option>
-            <option value="INFORMATION_TECHNOLOGY">Công nghệ thông tin</option>
           </select>
           <input
             type="text"
@@ -130,7 +126,6 @@ export default function CreateAccount({ onClose }) {
             value={formData.profile.country}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded"
-            required
           />
           <input
             type="text"
@@ -139,7 +134,6 @@ export default function CreateAccount({ onClose }) {
             value={formData.profile.address}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded"
-            required
           />
           <input
             type="text"
@@ -148,7 +142,6 @@ export default function CreateAccount({ onClose }) {
             value={formData.profile.nation}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded"
-            required
           />
           <input
             type="text"
@@ -157,7 +150,6 @@ export default function CreateAccount({ onClose }) {
             value={formData.profile.nationality}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded"
-            required
           />
           <input
             type="text"
@@ -166,7 +158,6 @@ export default function CreateAccount({ onClose }) {
             value={formData.profile.religion}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded"
-            required
           />
           <div className="flex gap-2">
             <button
@@ -183,7 +174,6 @@ export default function CreateAccount({ onClose }) {
               Hủy
             </button>
           </div>
-         
         </form>
       </div>
     </div>

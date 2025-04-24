@@ -10,83 +10,62 @@ export default function FundingForm({ setShowFormModal }) {
   });
   const [nckhOptions, setNckhOptions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [group, setGroup] = useState('');
-  const [showWarning, setShowWarning] = useState(false);
   const [studentGuidanceList, setStudentGuidanceList] = useState([]);
 
-  // Lấy danh sách NCKH từ API
+  // Fetch user's research that are STUDENT_GUIDANCE and user is leader
   useEffect(() => {
     const fetchNckhOptions = async () => {
       try {
-        // Lấy userId hiện tại
         const userId = localStorage.getItem('userId');
-        // Lấy các bản ghi user-scientific-research của user
-        const userResearchList = await fetchUserScientificResearch(userId);
-        // Lọc các nghiên cứu mà user là chủ nhiệm
-        const leaderResearch = userResearchList.filter(item => item.is_leader);
-  
-        // Lấy toàn bộ danh sách nghiên cứu khoa học
-        const allResearch = await fetchScientificResearch();
-        // Tạo map id -> name cho nhanh
-        const researchMap = {};
-        allResearch.data.forEach(r => {
-          researchMap[r.id] = r.name;
-        });
-  
-        // Tạo options chỉ gồm các nghiên cứu user làm chủ nhiệm
-        const myResearchOptions = leaderResearch.map(item => ({
-          sr_activities: item.scientific_research,
-          name: researchMap[item.scientific_research] || 'Không rõ tên'
-        }));
-  
-        setNckhOptions(myResearchOptions);
+        const [userResearchList, allResearch] = await Promise.all([
+          fetchUserScientificResearch(userId),
+          fetchScientificResearch()
+        ]);
+
+        // Create a map of scientific research data by ID
+        const researchMap = allResearch.data.reduce((map, research) => {
+          map[research.id] = research;
+          return map;
+        }, {});
+
+        // Filter research where user is leader and belongs to STUDENT_GUIDANCE
+        const filteredResearch = userResearchList
+          .filter(item => item.is_leader)
+          .map(item => {
+            const research = researchMap[item.scientific_research];
+            return research && research.sr_activities?.group === 'STUDENT_GUIDANCE' 
+              ? { 
+                  id: research.id,
+                  name: research.name,
+                  scientific_research_id: item.scientific_research
+                } 
+              : null;
+          })
+          .filter(Boolean);
+
+        setNckhOptions(filteredResearch);
       } catch (error) {
-        console.error('Lỗi khi tải danh sách NCKH:', error);
+        console.error('Error fetching research options:', error);
       }
     };
+
     fetchNckhOptions();
   }, []);
 
-  // Lấy danh sách STUDENT_GUIDANCE để show bên phải
+  // Fetch STUDENT_GUIDANCE activities for right panel
   useEffect(() => {
     const fetchStudentGuidance = async () => {
       try {
         const activities = await getListScientificActivities();
-        const filtered = activities.filter(act => act.group === 'STUDENT_GUIDANCE');
-        setStudentGuidanceList(filtered);
+        setStudentGuidanceList(
+          activities.filter(act => act.group === 'STUDENT_GUIDANCE')
+        );
       } catch (error) {
-        setStudentGuidanceList([]);
+        console.error('Error fetching student guidance:', error);
       }
     };
     fetchStudentGuidance();
   }, []);
-
-  // Khi chọn NCKH, lấy group từ getListScientificActivities
-  useEffect(() => {
-    const checkGroup = async () => {
-      if (!formData.s_research) {
-        setGroup('');
-        setShowWarning(false);
-        return;
-      }
-      try {
-        const activities = await getListScientificActivities();
-        // Tìm hoạt động có id trùng với sr_activities
-        const found = activities.find(act => act.id === formData.s_research);
-        if (found) {
-          setGroup(found.group);
-          setShowWarning(found.group !== 'STUDENT_GUIDANCE');
-        } else {
-          setGroup('');
-          setShowWarning(true);
-        }
-      } catch (error) {
-        setGroup('');
-        setShowWarning(true);
-      }
-    };
-    checkGroup();
-  }, [formData.s_research]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -131,19 +110,12 @@ export default function FundingForm({ setShowFormModal }) {
               >
                 <option value="">Chọn Tên Nghiên cứu</option>
                 {nckhOptions.map((option) => (
-                  <option key={option.sr_activities} value={option.sr_activities}>
+                  <option key={option.id} value={option.scientific_research_id}>
                     {option.name}
                   </option>
                 ))}
               </select>
             </div>
-
-            {/* Thông báo nếu không phải nhóm STUDENT_GUIDANCE */}
-            {showWarning && (
-              <div className="mb-4 text-red-500 text-sm">
-                Nghiên cứu này không được đề xuất kinh phí
-              </div>
-            )}
 
             {/* Kinh phí đề xuất */}
             <div className="mb-4">
@@ -159,7 +131,6 @@ export default function FundingForm({ setShowFormModal }) {
                 value={formData.funding}
                 onChange={handleChange}
                 required
-                disabled={showWarning}
               />
             </div>
 
@@ -176,7 +147,6 @@ export default function FundingForm({ setShowFormModal }) {
                 value={formData.context}
                 onChange={handleChange}
                 required
-                disabled={showWarning}
               />
             </div>
 
@@ -185,7 +155,7 @@ export default function FundingForm({ setShowFormModal }) {
               <button
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
                 type="submit"
-                disabled={loading || showWarning}
+                disabled={loading}
               >
                 {loading ? 'Đang tải...' : 'Tạo'}
               </button>

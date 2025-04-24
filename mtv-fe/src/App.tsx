@@ -12,7 +12,6 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 
 import HomeAdmin from './components/AdminPage/home';
 import ScientificRequest from './components/AdminPage/scientificRequest';
-import Dashboard from './components/AdminPage/dashboard';
 import FundingRequest from './components/AdminPage/fundingrequest';
 import Teacher from './components/AdminPage/teacher';
 import ScientificAdmin from './components/AdminPage/scientificdetails';
@@ -40,7 +39,6 @@ function App() {
         <Route path="/scientific-requests" element={<ProtectedRoute role="ADMIN"><ScientificRequest /></ProtectedRoute>} />
         <Route path="/scientific-details/:id" element={<ProtectedRoute role="ADMIN">< ScientificAdmin/></ProtectedRoute>} />
         <Route path="/funding-requests" element={<ProtectedRoute role="ADMIN"><FundingRequest /></ProtectedRoute>} />
-        <Route path="/dashboard" element={<Dashboard/>} />
         <Route path="/teacher" element={<ProtectedRoute role="ADMIN"><Teacher /></ProtectedRoute>} />
         <Route path="/teacher-details/:id" element={<ProtectedRoute role="ADMIN">< TeacherDetails/></ProtectedRoute>} />
         <Route path="/scientific-contracts" element={<ProtectedRoute role="ADMIN"><ActivitiesScientific/></ProtectedRoute>} />

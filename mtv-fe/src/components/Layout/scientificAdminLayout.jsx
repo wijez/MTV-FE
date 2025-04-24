@@ -19,22 +19,25 @@ export default function ScientificAdminLayout() {
     const fetchResearchRequests = async () => {
       try {
         const response = await fetchScientificResearch();
-        setResearchRequests(response.data);
-        console.log('Danh sách yêu cầu nghiên cứu:', response.data);
+        // Lọc danh sách chỉ lấy các yêu cầu có trạng thái "PROCESS"
+        const filteredRequests = response.data.filter(
+          (request) => request.status === 'PROCESS'
+        );
+        setResearchRequests(filteredRequests);
+        console.log('Danh sách yêu cầu nghiên cứu:', filteredRequests);
       } catch (error) {
         console.error('Lỗi khi gọi API:', error);
       } finally {
         setLoading(false);
       }
     };
-  
+
     fetchResearchRequests();
   }, []);
 
   useEffect(() => {
     sessionStorage.setItem('scientificAdminPage', currentPage);
   }, [currentPage]);
-
 
   // Xử lý khi thay đổi trang
   const handlePageChange = (event, value) => {
@@ -54,12 +57,14 @@ export default function ScientificAdminLayout() {
 
   return (
     <div className="flex max-h-screen">
-       <div className="pt-0 flex-1 bg-gray-100 p-6 overflow-y-auto relative">
-      <div className="bg-white p-6 rounded shadow min-h-[80vh]">
-        <h1 className="text-2xl font-bold text-gray-700 mb-4 text-center">Xem Yêu Cầu Nghiên cứu</h1>
+      <div className="pt-0 flex-1 bg-gray-100 p-6 overflow-y-auto relative">
+        <div className="bg-white p-6 rounded shadow min-h-[80vh]">
+          <h1 className="text-2xl font-bold text-gray-700 mb-4 text-center">Xem Yêu Cầu Nghiên cứu</h1>
 
           {loading ? (
             <div className="text-center text-blue-500">Đang tải dữ liệu...</div>
+          ) : researchRequests.length === 0 ? (
+            <div className="text-center text-gray-500">Không có yêu cầu nghiên cứu nào.</div>
           ) : (
             <div>
               {paginatedRequests.map((request) => (

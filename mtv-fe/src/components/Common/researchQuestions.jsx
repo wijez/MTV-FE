@@ -100,7 +100,7 @@ const ResearchQuestions = ({ onSelect }) => {
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Chọn Hoạt Động NCKH</h2>
+      <h2 className="text-xl font-bold mb-4">Chọn Hoạt Động Nghiên cứu khoa học</h2>
 
       {/* Level 1: Group */}
       <div className="mb-4">
