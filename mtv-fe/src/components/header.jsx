@@ -3,21 +3,18 @@ import avatar from '../assets/avatagit.jpg';
 import Profile from './Common/Profile'; 
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+
 const HeaderPage = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [showProfile, setShowProfile] = useState(false); 
-
   const navigate = useNavigate();
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
 
+  const toggleMenu = () => setMenuOpen(!menuOpen);
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
     document.documentElement.classList.toggle('dark');
   };
-
   const handleLogout = () => {
     const confirmLogout = window.confirm('Bạn có muốn thoát hay không?');
     if (confirmLogout) {
@@ -25,21 +22,23 @@ const HeaderPage = () => {
       localStorage.removeItem('refresh');
       localStorage.removeItem('role');
       localStorage.removeItem('userId');
-
-      navigate('/'); 
+      // navigate('/'); 
+      window.location.href = '/';
       toast.success('Đăng xuất thành công!');
     }
   };
+
   return (
     <header
-      className={`flex justify-between items-center p-4 ${
+      className={`fixed top-0 left-0 w-full z-50 flex items-center px-6 py-3 shadow-lg ${
         darkMode ? 'bg-gray-800' : 'bg-blue-700'
-      } z-50`}
+      }`}
+      style={{ minHeight: 64 }}
     >
       {/* Logo và Tìm kiếm */}
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center flex-1 min-w-0">
         {/* Logo */}
-        <div className="flex items-center">
+        <div className="flex items-center flex-shrink-0 mr-4">
           <svg
             width="40"
             height="40"
@@ -47,6 +46,7 @@ const HeaderPage = () => {
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
             onClick={() => navigate('/home')}
+            className="cursor-pointer"
           >
             <path
               d="M31.5 60.75C47.6543 60.75 60.75 47.6543 60.75 31.5C60.75 15.3457 47.6543 2.25 31.5 2.25C15.3457 2.25 2.25 15.3457 2.25 31.5C2.25 47.6543 15.3457 60.75 31.5 60.75Z"
@@ -66,9 +66,7 @@ const HeaderPage = () => {
               strokeWidth="4"
             />
           </svg>
-         
         </div>
-
         {/* Tìm kiếm */}
         <input
           type="text"
@@ -78,24 +76,21 @@ const HeaderPage = () => {
       </div>
 
       {/* Avatar và Menu */}
-      <div className="flex items-center space-x-4">
-        {/* Avatar */}
+      <div className="flex items-center flex-shrink-0 ml-4">
         <img
           src={avatar}
           alt="Avatar"
           className="w-10 h-10 rounded-full cursor-pointer"
           onClick={toggleMenu}
         />
-
-        {/* Menu Dropdown */}
         {menuOpen && (
           <div className="absolute top-16 right-4 bg-white shadow-lg rounded-lg p-4 z-50">
             <ul>
               <li
                 className="p-2 hover:bg-gray-200 cursor-pointer"
                 onClick={() => {
-                  setShowProfile(true); // Hiển thị dialog Profile
-                  setMenuOpen(false); // Đóng menu
+                  setShowProfile(true);
+                  setMenuOpen(false);
                 }}
               >
                 Tài khoản
@@ -103,7 +98,7 @@ const HeaderPage = () => {
               <li className="p-2 hover:bg-gray-200 cursor-pointer"
                 onClick={handleLogout}
                 >Đăng xuất
-                </li>
+              </li>
               <li
                 className="p-2 hover:bg-gray-200 cursor-pointer"
                 onClick={toggleDarkMode}
@@ -120,7 +115,6 @@ const HeaderPage = () => {
           </div>
         )}
       </div>
-
       {/* Hiển thị dialog Profile */}
       {showProfile && <Profile onClose={() => setShowProfile(false)} />}
     </header>

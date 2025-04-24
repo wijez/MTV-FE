@@ -29,7 +29,7 @@ export default function ScientificActivitiesLayout() {
     setActivities((prev) => {
       const updatedActivities = [...prev];
       if (inputIndex === null) {
-        updatedActivities[activityIndex][key] = value;
+        updatedActivities[activityIndex][key] = value; // Không thay thế giá trị rỗng
       } else {
         updatedActivities[activityIndex].input[inputIndex][key] = value;
       }
@@ -75,7 +75,7 @@ export default function ScientificActivitiesLayout() {
     setActivities((prev) => [
       ...prev,
       {
-        group: "",
+        group: "RESEARCH_PROJECTS",
         content: "",
         input: [
           {
@@ -88,23 +88,33 @@ export default function ScientificActivitiesLayout() {
     ]);
   };
 
-  const handleAddInput = (activityIndex) => {
-    setActivities((prev) => {
-      const updatedActivities = [...prev];
-      updatedActivities[activityIndex].input.push({
-        note: "",
-        proof: "",
-        value: {},
-      });
-      return updatedActivities;
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitted Data:", activities);
+  
+    // Kiểm tra dữ liệu trước khi gửi
+    const validatedActivities = activities.map((activity) => {
+      // Đảm bảo group không rỗng
+      if (!activity.group.trim()) {
+        toast.error("Vui lòng chọn nhóm cho tất cả các hoạt động!");
+        throw new Error("Group is required");
+      }
+  
+      // Chuyển đổi giá trị trong value sang số
+      const validatedInputs = activity.input.map((input) => ({
+        ...input,
+        value: Object.fromEntries(
+          Object.entries(input.value).map(([key, val]) => [key, Number(val)])
+        ),
+      }));
+  
+      return {
+        ...activity,
+        input: validatedInputs,
+      };
+    });
+  
     try {
-      for (const activity of activities) {
+      for (const activity of validatedActivities) {
         const payload = {
           group: activity.group,
           content: activity.content,
@@ -112,13 +122,15 @@ export default function ScientificActivitiesLayout() {
         };
   
         const response = await submitScientificActivities(payload);
-        console.log('Response:', response);
+        console.log("Response:", response);
       }
   
-      toast.success('Dữ liệu đã được gửi thành công!');
+      toast.success("Dữ liệu đã được gửi thành công!");
     } catch (error) {
-      console.error('Lỗi khi gửi dữ liệu:', error);
-      toast.error('Đã xảy ra lỗi khi gửi dữ liệu.');
+      console.error("Lỗi khi gửi dữ liệu:", error);
+      toast.error(
+        error.response?.data?.message || "Đã xảy ra lỗi khi gửi dữ liệu."
+      );
     }
   };
 
@@ -146,12 +158,13 @@ export default function ScientificActivitiesLayout() {
             <div className="mb-4">
               <label className="block text-gray-700 font-medium mb-1">Nhóm</label>
               <select
-                value={activity.group}
-                onChange={(e) =>
-                  handleInputChange(activityIndex, null, "group", e.target.value)
-                }
+                 value={activity.group}
+                 onChange={(e) =>
+                   handleInputChange(activityIndex, null, "group", e.target.value)
+                 }
                 className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
+                <option value="">--Chọn Nhóm đề tài--</option>
                 <option value="RESEARCH_PROJECTS">Nhóm đề tài NCKH</option>
                 <option value="ARTICLES_BOOKS">Nhóm bài viết, sách</option>
                 <option value="STUDENT_GUIDANCE">Nhóm hướng dẫn sinh viên</option>

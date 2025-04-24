@@ -27,8 +27,8 @@ const HeaderAdmin = () => {
       localStorage.removeItem('refresh');
       localStorage.removeItem('role');
 
-      navigate('/');
-      window.location.reload(); 
+      // navigate('/');
+      window.location.href = '/';; 
     }
   };
 
